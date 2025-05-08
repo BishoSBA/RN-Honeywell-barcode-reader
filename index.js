@@ -1,46 +1,52 @@
-const ReactNative = require('react-native');
-const {NativeModules, DeviceEventEmitter, NativeEventEmitter} = ReactNative;
-const HoneywellBarcodeReader = NativeModules.HoneywellBarcodeReader || {}; // Hacky fallback for iOS
+import { NativeEventEmitter, Platform } from "react-native";
+import HoneywellBarcodeReader from "./js/NativeHoneywellBarcodeReader";
 
-/**
- * Listen for available events
- * @param  {String} eventName Name of event one of barcodeReadSuccess, barcodeReadFail
- * @param  {Function} handler Event handler
- */
+if (!HoneywellBarcodeReader) {
+  console.warn("HoneywellBarcodeReader is not available on this platform");
+}
 
-const barcodeReaderEmitter = new NativeEventEmitter();
+const barcodeReaderEmitter = new NativeEventEmitter(HoneywellBarcodeReader);
 
-var subscriptionBarcodeReadSuccess = null;
-var subscriptionBarcodeReadFail = null;
+let subscriptionBarcodeReadSuccess = null;
+let subscriptionBarcodeReadFail = null;
 
-HoneywellBarcodeReader.onBarcodeReadSuccess = handler => {
-  subscriptionBarcodeReadSuccess?.remove();
-  subscriptionBarcodeReadSuccess = null;
-  subscriptionBarcodeReadSuccess = barcodeReaderEmitter.addListener(
-    HoneywellBarcodeReader.BARCODE_READ_SUCCESS,
-    handler,
-  );
+const HoneywellBarcodeReaderModule = {
+  ...HoneywellBarcodeReader,
+
+  onBarcodeReadSuccess: (handler) => {
+    subscriptionBarcodeReadSuccess?.remove();
+    subscriptionBarcodeReadSuccess = null;
+    subscriptionBarcodeReadSuccess = barcodeReaderEmitter.addListener(
+      HoneywellBarcodeReader.BARCODE_READ_SUCCESS,
+      handler
+    );
+  },
+
+  onBarcodeReadFail: (handler) => {
+    subscriptionBarcodeReadFail?.remove();
+    subscriptionBarcodeReadFail = null;
+    subscriptionBarcodeReadFail = barcodeReaderEmitter.addListener(
+      HoneywellBarcodeReader.BARCODE_READ_FAIL,
+      handler
+    );
+  },
+
+  offBarcodeReadSuccess: () => {
+    subscriptionBarcodeReadSuccess?.remove();
+    subscriptionBarcodeReadSuccess = null;
+  },
+
+  offBarcodeReadFail: () => {
+    subscriptionBarcodeReadFail?.remove();
+    subscriptionBarcodeReadFail = null;
+  },
+
+  isCompatible: () => {
+    return Platform.OS === "android" && HoneywellBarcodeReader?.isCompatible;
+  },
+  getBrand: () => {
+    return HoneywellBarcodeReader?.BRAND;
+  },
 };
 
-HoneywellBarcodeReader.onBarcodeReadFail = handler => {
-  subscriptionBarcodeReadFail?.remove();
-  subscriptionBarcodeReadFail = null;
-  subscriptionBarcodeReadFail = barcodeReaderEmitter.addListener(
-    HoneywellBarcodeReader.BARCODE_READ_FAIL,
-    handler,
-  );
-};
-
-/**
- * Stop listening for event
- * @param  {String} eventName Name of event one of barcodeReadSuccess, barcodeReadFail
- * @param  {Function} handler Event handler
- */
-HoneywellBarcodeReader.offBarcodeReadSuccess = () => {
-  subscriptionBarcodeReadSuccess?.remove();
-};
-HoneywellBarcodeReader.offBarcodeReadFail = () => {
-  subscriptionBarcodeReadFail?.remove();
-};
-
-module.exports = HoneywellBarcodeReader;
+export default HoneywellBarcodeReaderModule;
