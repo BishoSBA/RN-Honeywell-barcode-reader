@@ -14,14 +14,12 @@ buildscript {
     dependencies {
         classpath("com.android.tools.build:gradle:7.4.2")
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
-        classpath("com.facebook.react:react-native-gradle-plugin")
     }
 }
 
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-kapt'
-apply plugin: 'com.facebook.react'
 
 android {
     compileSdkVersion rootProject.ext.compileSdkVersion
@@ -37,6 +35,21 @@ android {
         }
         
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    sourceSets {
+        main {
+            java {
+                srcDirs += "generated/java"
+            }
+        }
+    }
+
+    externalNativeBuild {
+        cmake {
+            path "generated/jni/CMakeLists.txt"
+            version "3.22.1"
+        }
     }
 
     buildFeatures {
