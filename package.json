@@ -1,7 +1,7 @@
 {
   "name": "react-native-honeywell",
   "description": "A barcode reader for Honeywell handheld devices",
-  "version": "2.0.9",
+  "version": "3.0.0",
   "source": "./src/index.tsx",
   "main": "./lib/commonjs/index.js",
   "module": "./lib/module/index.js",
